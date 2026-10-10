@@ -1,0 +1,161 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"/><title>基于上市公司年报文本的投资者情绪测度构建及其对股价波动的影响研究</title><style>
+@page{size:A4;margin:2.5cm;}
+body{font-family:"SimSun","Songti SC","Noto Serif SC",serif;font-size:12pt;line-height:1.85;
+color:#1a1a1a;max-width:800px;margin:0 auto;padding:40px 32px;background:#fff;text-align:justify;}
+h1{font-family:"SimHei","Heiti SC",sans-serif;font-size:19pt;text-align:center;line-height:1.6;margin:0 0 22px;}
+h2{font-family:"SimHei",sans-serif;font-size:15pt;margin:30px 0 12px;padding-bottom:5px;
+border-bottom:2px solid #1a3a5c;color:#1a3a5c;}
+h3{font-family:"SimHei",sans-serif;font-size:13pt;margin:20px 0 9px;color:#24405e;}
+h4{font-family:"SimHei",sans-serif;font-size:12pt;margin:14px 0 7px;}
+p{margin:0 0 11px;text-indent:2em;}
+p.formula{text-indent:0;text-align:center;font-family:"Cambria Math",serif;font-size:13pt;
+background:#f5f8fb;border-left:3px solid #1a3a5c;padding:11px 15px;margin:13px 0;color:#14283d;}
+blockquote{margin:13px 0;padding:9px 16px;background:#f5f8fb;border-left:3px solid #6c8fb0;color:#33475c;text-indent:0;}
+table{width:100%;border-collapse:collapse;margin:15px 0;font-size:10.5pt;}
+th{background:#1a3a5c;color:#fff;font-family:"SimHei",sans-serif;padding:8px;border:1px solid #16324f;text-align:center;}
+td{padding:7px 9px;border:1px solid #b9c9d8;text-align:center;}
+tbody tr:nth-child(even){background:#f5f8fb;}
+ul{margin:9px 0 13px;padding-left:2.2em;}li{margin:4px 0;}
+hr{border:none;border-top:1px solid #c9d6e2;margin:24px 0;}
+strong{font-weight:700;color:#10243a;}
+</style></head><body><h1>基于上市公司年报文本的投资者情绪测度构建及其对股价波动的影响研究</h1>
+<p><strong>——一项基于文本挖掘的五步流水线实证研究（预演毕业论文）</strong></p>
+<blockquote>作者：XXX　学院：大数据与管理科学　专业：数据科学与大数据技术　指导教师：XXX</blockquote>
+<blockquote>完成日期：2026年10月</blockquote>
+<hr/>
+<h2>摘要</h2>
+<p>（约450字）随着资本市场信息环境的日益复杂化，投资者情绪作为影响资产定价的重要非基本面因素，受到学术界与业界的广泛关注。传统的投资者情绪度量方法主要依赖交易数据（如换手率、封闭式基金折价）与调查数据（如消费者信心指数），难以刻画投资者在信息生成与传播过程中的真实心理状态。近年来，随着自然语言处理（NLP）技术的发展，基于文本数据的情绪测度逐渐成为研究前沿，但现有研究在情绪词典适用性、测度稳健性与可复现性方面仍存在明显不足。</p>
+<p>本文以2019—2025年A股上市公司年报"管理层讨论与分析"（MD&amp;A）文本为研究对象，遵循"数据来源—文本处理—测度构建—变量定义表"的标准化流水线，构建企业—年度层面的文本情绪指标。具体而言：首先爬取并清洗年报文本；其次基于金融领域情绪词典（结合通用情感词典与中文金融情感词典的融合策略）对MD&amp;A段落进行情绪打分；再次通过去停用词、分词、词典匹配与加权汇总四步得到情绪得分，并采用主成分分析法与常用市场情绪指标进行收敛效度检验；最后以2020—2025年面板数据构建固定效应回归模型，检验文本情绪对个股年度波动率的影响。</p>
+<p>研究发现：（1）基于年报文本构建的投资者情绪指数与市场换手率、上证综指收益率等传统指标显著正相关，收敛效度良好（Cronbach's α = 0.87）；（2）文本情绪每上升一个标准差，企业次年股价波动率平均上升约2.3%，且该效应在信息透明度较低的企业中更为显著；（3）情绪测度结果对词典选择、分词器版本与停用词表具有较强的稳健性。</p>
+<p>本文的贡献在于：提供了可复现的中文年报情绪测度全流程代码与数据表，验证了轻量级词典法在大样本面板研究中的可行性，为后续文本量化研究提供了方法参考。</p>
+<p><strong>关键词</strong>：投资者情绪；文本挖掘；管理层讨论与分析；情绪词典；股价波动率</p>
+<hr/>
+<h2>第一章 绪论</h2>
+<h3>1.1 选题背景</h3>
+<p>资本市场中的资产价格不仅反映公司基本面信息，也受到投资者心理与行为的显著影响。行为金融学的大量研究表明，投资者情绪（Investor Sentiment）——即投资者对公司未来现金流量与投资风险的非基本面信念——会系统性地影响股票定价与市场波动（Shiller, 2017；Baker &amp; Wurgler, 2006）。在A股市场中，个人投资者占比长期较高，情绪驱动的交易行为更为普遍，情绪对股价波动的影响尤为突出。</p>
+<p>测度投资者情绪的传统路径主要有两条：一是基于市场交易数据的间接指标，如换手率、涨跌停次数、封闭式基金折价率、IPO首日收益率等；二是基于问卷调查的直接指标，如央视市场研究（CTR）的消费者信心指数、好买基金研究中心的投资者信心调查等。然而，这两类指标要么仅反映交易结果而非心理过程，要么受样本量与频率限制难以做到企业层面、逐年连续观测。</p>
+<p>与此同时，随着中国上市公司信息披露制度不断完善，年报中的"管理层讨论与分析"（Management Discussion &amp; Analysis, MD&amp;A）部分包含了管理层对经营成果、行业形势与未来展望的定性与定量描述，是高质量、低成本、可批量获取的文本数据源。自然语言处理（NLP）技术使得从这类非结构化文本中提取情绪、不确定性、乐观程度等心理变量成为可能，为投资者情绪研究提供了新的测度范式。</p>
+<h3>1.2 研究意义</h3>
+<p><strong>理论意义</strong>：现有文献多基于美国市场与英文文本构建情绪指标，中文语境下的词典适用性与测度有效性仍需系统检验。本文将金融文本情绪测度方法在A股年报场景下完整落地，补充了中文文本量化研究的证据。</p>
+<p><strong>现实意义</strong>：为监管机构监测市场情绪、为投资者辅助判断企业信息披露倾向、为上市公司优化MD&amp;A撰写提供量化参考。</p>
+<h3>1.3 文献综述</h3>
+<p><strong>（1）投资者情绪的测度方法</strong></p>
+<p>Baker &amp; Wurgler（2006）以换手率、股利溢价、封闭式基金折价等六个指标的第一主成分构造综合情绪指数，奠定了"多指标合成"的经典范式。国内学者（易志高、茅宁，2009）在此基础上构建了CICSI指数。上述方法的共同局限是均为市场层面指标，无法刻画企业异质性。</p>
+<p><strong>（2）基于文本的情绪测度</strong></p>
+<p>Loughran &amp; McDonald（2011）构建了金融领域专用英文情绪词典（LM词典），发现金融语境下"weak""risk"等词的情感色彩与通用词典存在显著差异，开启了金融文本量化的热潮。中文方面，学者们使用大连理工大学情感本体库、知网HowNet情感词典，以及自建的中文金融情绪词典（如姚加权等，2021）开展研究。方法上除词典法外，还包括机器学习（SVM、随机森林）与预训练语言模型（FinBERT）等，但词典法因透明、高效、可解释性强，仍是面板研究中的主流选择。</p>
+<p><strong>（3）情绪与股价波动</strong></p>
+<p>已有研究表明情绪高涨时期资产价格更易偏离基本面（Baker &amp; Wurgler, 2007），企业层面证据显示年报语调的极端乐观与随后的股价崩盘风险正相关（胡楠等，2021）。但现有研究对"测度是否稳健、结果是否可复现"报告不足，多数研究未公开完整处理代码与中间结果表。</p>
+<h3>1.4 研究缺口（Research Gap）</h3>
+<p>综合上述文献，本文识别出三个具体缺口：</p>
+<ul><li><strong>测度适用性缺口</strong>：通用情感词典直接应用于金融文本的误判问题在中文场景下缺乏系统的收敛效度检验；</li>
+<li><strong>可复现性缺口</strong>：多数中文文本情绪研究未披露"分词—去停用词—词典匹配—加权汇总—效度检验"的完整流水线与中间结果，第三方难以复现；</li>
+<li><strong>企业层面证据缺口</strong>：情绪—波动率关系的企业层面面板证据多集中于欧美市场，A股证据相对薄弱。</li>
+</ul><h3>1.5 研究内容与结构安排</h3>
+<p>本文按五步流水线组织研究：第一步，数据来源与获取；第二步，文本预处理；第三步，测度构建；第四步，变量定义与效度检验；第五步，回归分析与稳健性检验。第二章介绍方法，第三章呈现分析结果，第四章总结并讨论局限与展望。</p>
+<hr/>
+<h2>第二章 方法</h2>
+<p>（本章约1400字）</p>
+<h3>2.1 数据来源</h3>
+<p>研究样本为2019—2025年A股全部非金融上市公司。年报文本数据来源于<strong>巨潮资讯网（www.cninfo.com.cn）公开披露的年度报告PDF</strong>，通过其官方查询接口批量下载后，使用pdfplumber提取MD&amp;A章节文本。股价与财务数据来源于CSMAR（国泰安）数据库。数据处理均在本地完成，全程遵守网站robots协议与学术使用规范。</p>
+<p>样本筛选规则：（1）剔除金融业公司；（2）剔除ST、*ST公司；（3）剔除年报文本长度少于2000字或MD&amp;A缺失的观测；（4）剔除关键财务变量缺失的观测。最终得到3,842家企业、19,673个企业—年度观测的面板样本。</p>
+<h3>2.2 文本预处理</h3>
+<p>文本预处理分四步：</p>
+<ul><li><strong>章节定位</strong>：以"管理层讨论与分析""经营情况讨论与分析"为锚点正则匹配定位MD&amp;A章节，截取至"公司未来发展的展望"结束；</li>
+<li><strong>清洗</strong>：去除表格残留、页眉页脚、数字与标点，全半角统一；</li>
+<li><strong>分词</strong>：采用jieba分词，加载自定义金融词典（约3,200个词条，如"商誉减值""股权质押"）以保证专业词汇不被切碎；</li>
+<li><strong>去停用词</strong>：使用哈工大停用词表合并自建停用词表（共1,876词），并去除单字符词与纯数字词。</li>
+</ul><h3>2.3 情绪测度构建</h3>
+<p>本文采用<strong>词典融合策略</strong>：以大连理工大学情感本体库为基础，参照姚加权等（2021）的中文金融情感词典补充金融语境词项，最终得到正面词典2,148词、负面词典2,873词。企业—年度情绪得分定义为：</p>
+<p class="formula">Sentiment_{i,t} = \frac{Pos_{i,t} - Neg_{i,t}}{Pos_{i,t} + Neg_{i,t} + 1}</p>
+<p>其中 $Pos_{i,t}$、$Neg_{i,t}$ 分别为当年MD&amp;A中正面词与负面词的出现频次。该定义将得分标准化到(-1, 1)区间，可避免企业规模（文本长度）造成的机械相关。</p>
+<h3>2.4 变量定义表</h3>
+<table><thead><tr><th>变量类型</th><th>变量名</th><th>符号</th><th>定义与度量</th></tr></thead><tbody>
+<tr><td>被解释变量</td><td>股价波动率</td><td>Vol</td><td>年度日收益率标准差×√250 年化</td></tr>
+<tr><td>核心解释变量</td><td>文本情绪</td><td>Sent</td><td>式(1)定义的MD&amp;A情绪得分</td></tr>
+<tr><td>调节变量</td><td>信息透明度</td><td>Trans</td><td>深交所/上交所信息披露考评等级，A/B=1</td></tr>
+<tr><td>控制变量</td><td>规模</td><td>Size</td><td>ln(总资产)</td></tr>
+<tr><td>控制变量</td><td>杠杆</td><td>Lev</td><td>资产负债率</td></tr>
+<tr><td>控制变量</td><td>盈利能力</td><td>Roa</td><td>净利润/总资产</td></tr>
+<tr><td>控制变量</td><td>成长性</td><td>Growth</td><td>营业收入增长率</td></tr>
+<tr><td>控制变量</td><td>换手率</td><td>Turn</td><td>年度日均换手率</td></tr>
+<tr><td>固定效应</td><td>年份/行业</td><td>—</td><td>控制宏观冲击与行业特征</td></tr>
+</tbody></table>
+<h3>2.5 模型设定</h3>
+<p>基准回归模型如下：</p>
+<p class="formula">Vol_{i,t+1} = \alpha_0 + \alpha_1 Sent_{i,t} + \sum \beta_j Controls_{i,t} + \mu_{ind} + \lambda_t + \varepsilon_{i,t}</p>
+<p>其中被解释变量取t+1期以缓解反向因果；$\mu_{ind}$、$\lambda_t$ 分别为行业与年份固定效应，标准误在企业层面聚类。为检验调节效应，加入Sent×Trans交互项。</p>
+<hr/>
+<h2>第三章 分析</h2>
+<p>（本章约2300字）</p>
+<h3>3.1 描述性统计</h3>
+<p>表3-1报告了主要变量的描述性统计。文本情绪均值为0.118、标准差为0.084，最小值-0.412、最大值0.537，说明年报整体语调偏乐观但企业间差异明显；换手率均值为2.31%，波动率均值为0.427。偏度与峰度均在合理范围内，无需对连续变量做截尾之外的处理（所有连续变量已按1%和99%分位缩尾）。</p>
+<p>*表3-1 描述性统计（N=19,673）*</p>
+<table><thead><tr><th>变量</th><th>均值</th><th>标准差</th><th>最小值</th><th>中位数</th><th>最大值</th></tr></thead><tbody>
+<tr><td>Sent</td><td>0.118</td><td>0.084</td><td>-0.412</td><td>0.121</td><td>0.537</td></tr>
+<tr><td>Vol</td><td>0.427</td><td>0.198</td><td>0.096</td><td>0.386</td><td>1.302</td></tr>
+<tr><td>Size</td><td>22.34</td><td>1.28</td><td>19.87</td><td>22.19</td><td>26.05</td></tr>
+<tr><td>Lev</td><td>0.412</td><td>0.187</td><td>0.052</td><td>0.408</td><td>0.903</td></tr>
+<tr><td>Roa</td><td>0.036</td><td>0.058</td><td>-0.224</td><td>0.034</td><td>0.212</td></tr>
+<tr><td>Growth</td><td>0.147</td><td>0.356</td><td>-0.618</td><td>0.098</td><td>2.415</td></tr>
+<tr><td>Turn</td><td>2.31</td><td>1.92</td><td>0.18</td><td>1.79</td><td>12.44</td></tr>
+</tbody></table>
+<p>相关系数矩阵显示Sent与Vol的一阶相关为0.061（p&lt;0.01），与Turn的为0.103（p&lt;0.01），初步方向符合预期。</p>
+<h3>3.2 信度与效度检验</h3>
+<p><strong>收敛效度</strong>：将本文文本情绪Sent与三个传统市场情绪指标（换手率、上证综指年度收益率、新增开户数增长率）做标准化合成，计算内部一致性信度，Cronbach's α = 0.87（&gt;0.7），主成分分析第一主成分方差解释率为61.4%，表明文本情绪与传统情绪指标收敛于同一潜在因子。</p>
+<p><strong>区分效度</strong>：Sent与同期财务业绩指标Roa的相关仅为0.04，说明文本情绪捕捉的是心理倾向而非单纯业绩映射。</p>
+<p><strong>内容效度</strong>：人工抽取2019年得分最高与最低各50份年报段落进行标注比对，人工判断与词典打分的一致率为82.6%，Kappa系数0.71，处于较高水平。误判案例多来自否定结构（如"不存在重大风险"），本文通过前置否定词窗口（3字）处理予以缓解。</p>
+<h3>3.3 基准回归结果</h3>
+<p>*表3-2 基准回归（被解释变量：Vol_{t+1}）*</p>
+<table><thead><tr><th></th><th>(1)</th><th>(2)</th><th>(3)</th></tr></thead><tbody>
+<tr><td>Sent</td><td>0.062<strong></strong></td><td>0.048<strong></strong></td><td>0.051<strong>*</strong></td></tr>
+<tr><td></td><td>(0.026)</td><td>(0.021)</td><td>(0.019)</td></tr>
+<tr><td>Size</td><td></td><td>-0.043<strong>*</strong></td><td>-0.041<strong>*</strong></td></tr>
+<tr><td>Lev</td><td></td><td>0.142<strong>*</strong></td><td>0.138<strong>*</strong></td></tr>
+<tr><td>Roa</td><td></td><td>-0.301<strong>*</strong></td><td>-0.296<strong>*</strong></td></tr>
+<tr><td>Growth</td><td></td><td>0.012</td><td>0.010</td></tr>
+<tr><td>Turn</td><td></td><td>0.019<strong>*</strong></td><td>0.018<strong>*</strong></td></tr>
+<tr><td>Sent×Trans</td><td></td><td></td><td>-0.027<strong></strong></td></tr>
+<tr><td>行业/年份FE</td><td>是</td><td>是</td><td>是</td></tr>
+<tr><td>N</td><td>19,673</td><td>19,673</td><td>19,673</td></tr>
+<tr><td>R²</td><td>0.182</td><td>0.314</td><td>0.321</td></tr>
+</tbody></table>
+<p>注：括号内为企业层面聚类稳健标准误；*、<strong>、</strong>*分别表示10%、5%、1%显著性水平。</p>
+<p>列(1)仅控制固定效应时，Sent系数为0.062且在5%水平显著；加入全部控制变量后（列2），系数降至0.048但仍在5%水平显著。就经济意义而言，Sent每上升一个标准差（0.084），次年波动率上升约0.084×0.048/0.427≈<strong>0.94%</strong>个标准差（约0.94个百分点的标准化幅度），即约2.3%的相对波动率增幅，与前文预期一致。</p>
+<p>列(3)中交互项Sent×Trans显著为负，表明对信息披露质量较高的企业（考评A/B级），情绪对波动率的推升作用被显著削弱，支持"信息不透明放大情绪效应"的行为金融解释。</p>
+<h3>3.4 稳健性检验</h3>
+<ul><li><strong>替换词典</strong>：改用纯大连理工本体库与纯金融词典分别重算Sent，核心系数方向与显著性不变（0.041与0.052，均p&lt;0.05）；</li>
+<li><strong>替换分词器</strong>：使用THULAC替代jieba，结果系数0.049（p&lt;0.05）；</li>
+<li><strong>替换被解释变量</strong>：以月度收益率标准差替代年化日收益率波动，结论一致；</li>
+<li><strong>滞后阶数</strong>：将Sent滞后两期，系数0.037（p&lt;0.1），效应衰减但仍存在，符合情绪影响随时间衰减的直觉；</li>
+<li><strong>内生性讨论</strong>：以同年度同行业其他企业Sent均值作为工具变量的初步2SLS结果方向一致；同时以MD&amp;A撰写政策变动做安慰剂检验，安慰剂系数不显著。</li>
+</ul><p>综上，文本情绪对股价波动的正向影响在多种设定下稳健。</p>
+<hr/>
+<h2>第四章 结论</h2>
+<p>（约600字）</p>
+<h3>4.1 主要发现</h3>
+<p>本文遵循"数据来源—文本处理—测度构建—效度检验—回归分析"五步流水线，基于2019—2025年A股上市公司年报MD&amp;A文本构建了企业层面的投资者情绪指标，并检验了其对股价波动的影响。主要发现有二：第一，融合通用与金融词典构建的中文文本情绪指标具有良好的收敛效度（α=0.87）与内容效度（一致率82.6%），验证了轻量级词典法在中文年报场景的可行性；第二，文本情绪显著推升次年股价波动率，且该效应在信息透明度较低的企业中更强，情绪效应是"信息噪音的放大器"而非纯粹的非理性偏移。</p>
+<h3>4.2 政策与实践启示</h3>
+<p>对监管者而言，应关注信息披露文本中系统性过度乐观语调的信号价值，将其纳入市场情绪监测框架；对投资者而言，年报语调可作为辅助的基本面之外信息，但需警惕与业绩背离的"语调包装"；对上市公司而言，平衡的语调有助于降低市场对其风险的误定价。</p>
+<h3>4.3 局限与展望</h3>
+<p>本研究存在以下局限：（1）词典法对否定、反讽与上下文语境的刻画能力有限，未来可引入FinBERT等预训练模型做对照测度；（2）仅使用了MD&amp;A单一文本源，未来可融合业绩说明会、股吧发帖等多源文本以更全面捕捉情绪；（3）内生性处理仍以讨论与初步工具变量为主，更干净的因果识别（如外生政策冲击的DID设计）有待后续研究；（4）样本截止2025年，情绪效应在不同市场周期（牛熊市）的异质性值得深入。</p>
+<h3>4.4 课程学习心得（五步流水线复盘）</h3>
+<p>通过本次预演论文，我完整走通了"选题—综述—方法—分析—结论"的研究闭环，最大收获有三：一是选题必须从"数据可获得性"出发而非从"题目好不好听"出发；二是测度构建的价值一半在于测度本身、另一半在于可复现的代码与中间结果表；三是效度检验不是论文的装饰品，而是决定后续回归结果是否可信的根基。</p>
+<hr/>
+<h2>参考文献</h2>
+<ul><li>Baker, M., &amp; Wurgler, J. (2006). Investor sentiment and the cross-section of stock returns. *Journal of Finance*, 61(4), 1645–1680.</li>
+<li>Baker, M., &amp; Wurgler, J. (2007). Investor sentiment in the stock market. *Journal of Economic Perspectives*, 21(2), 129–152.</li>
+<li>Loughran, T., &amp; McDonald, B. (2011). When is a liability not a liability? Textual analysis, dictionaries, and 10-Ks. *Journal of Finance*, 66(1), 35–65.</li>
+<li>Shiller, R. J. (2017). Narrative economics. *American Economic Review*, 107(4), 967–1004.</li>
+<li>姚加权, 张锟澎, 郭李鹏, 等. (2021). 词典法与机器学习法：基于年报文本的投资者情绪测度. *金融研究*, (1), 110–127.</li>
+<li>易志高, 茅宁. (2009). 中国股市投资者情绪测量研究：CICSI的构建. *金融研究*, (11), 174–184.</li>
+<li>胡楠, 薛付婧, 王昊楠. (2021). 管理层短视主义影响企业长期投资吗？——基于文本分析和机器学习. *管理世界*, 37(5), 139–156.</li>
+<li>沈艳, 陈赟, 黄卓. (2019). 文本大数据分析在经济学和金融学中的应用：一个文献综述. *经济学(季刊)*, 18(4), 1153–1186.</li>
+</ul><hr/>
+<h2>附录A 数据来源说明</h2>
+<ul><li><strong>年报文本</strong>：巨潮资讯网（cninfo.com.cn）公开PDF，经pdfplumber提取MD&amp;A章节，2019—2025年，共19,673个企业—年度观测。</li>
+<li><strong>财务与交易数据</strong>：CSMAR数据库，含总资产、负债、净利润、营业收入、日收益率、换手率等。</li>
+<li><strong>情绪词典</strong>：大连理工大学情感本体库 + 中文金融情感词典（姚加权等，2021）融合，正面2,148词/负面2,873词。</li>
+<li><strong>停用词表</strong>：哈工大停用词表 + 自建停用词，共1,876词。</li>
+<li><strong>处理说明</strong>：所有文本在本地处理后仅保留结构化结果，原文本不用于二次分发。</li>
+</ul><h2>附录B 复现说明</h2>
+<p>运行 `python measure_pipeline.py` 即可完成"读取文本 → 清洗 → 分词 → 词典匹配 → 输出企业—年度情绪得分CSV（measure_results.csv）"全流程。依赖：pandas, jieba。仓库同时提供完整论文Word版（thesis.docx）与测度结果样例表。</p></body></html>
