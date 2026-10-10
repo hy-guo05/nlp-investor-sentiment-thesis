@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# 输出中间产物（保留最终 docx）
+output/*/stage2/intermediate/
+output/*/working/
+
+# 站点临时副本（由 build_site.py 生成）
+site/thesis.html
+site/thesis.docx
+site/measure_pipeline.py
+site/build_docx.py
+site/measure_results.csv
+site/data_source.md
+
+# Office / 系统临时文件
+~$*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
